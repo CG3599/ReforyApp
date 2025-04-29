@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         Button btCreate = findViewById(R.id.button_Create);
         Button btModify = findViewById(R.id.button_Modify);
         Button btClear = findViewById(R.id.button_Clear);
@@ -54,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnTime.setOnClickListener(v -> showDatePickerDialog());
 
+        EditText edPicURL = findViewById(R.id.editText_PicURL);
+
         /**=======================================================================================*/
         /**設置修改資料的事件*/
         btModify.setOnClickListener((v) -> {
@@ -62,12 +63,14 @@ public class MainActivity extends AppCompatActivity {
                 String name = edName.getText().toString();
                 String count = edCount.getText().toString();
                 String time = tvSelectedDate.getText().toString();
-                MyData data = new MyData(nowSelectedData.getId(), name, count, time);
+                String picURL = edPicURL.getText().toString();
+                MyData data = new MyData(nowSelectedData.getId(), name, count, time, picURL);
                 DataBase.getInstance(this).getDataUao().updateData(data);
                 runOnUiThread(() -> {
                     edName.setText("");
                     edCount.setText("");
                     tvSelectedDate.setText("");
+                    edPicURL.setText("");
                     nowSelectedData = null;
                     myAdapter.refreshView();
                     Toast.makeText(this, "已更新資訊！", Toast.LENGTH_LONG).show();
@@ -81,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
             edName.setText("");
             edCount.setText("");
             tvSelectedDate.setText("");
+            edPicURL.setText("");
             nowSelectedData = null;
         }));
         /**=======================================================================================*/
@@ -90,14 +94,16 @@ public class MainActivity extends AppCompatActivity {
                 String name = edName.getText().toString();
                 String count = edCount.getText().toString();
                 String time = tvSelectedDate.getText().toString();
+                String picURL = edPicURL.getText().toString();
                 if (name.length() == 0) return;//如果名字欄沒填入任何東西，則不執行下面的程序
-                MyData data = new MyData(name, count, time);
+                MyData data = new MyData(name, count, time, picURL);
                 DataBase.getInstance(this).getDataUao().insertData(data);
                 runOnUiThread(() -> {
                     myAdapter.refreshView();
                     edName.setText("");
                     edCount.setText("");
                     tvSelectedDate.setText("");
+                    edPicURL.setText("");
                 });
             }).start();
         }));
@@ -120,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
                     edName.setText(myData.getName());
                     edCount.setText(myData.getCount());
                     tvSelectedDate.setText(myData.getTime());
+                    edPicURL.setText(String.valueOf(myData.getPicURL()));
                 });
                 /**===============================================================================*/
             });

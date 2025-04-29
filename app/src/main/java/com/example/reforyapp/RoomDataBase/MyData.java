@@ -14,17 +14,21 @@ public class MyData {
     private String count;
     private String time;
 
-    public MyData(String name, String count, String time) {
+    private String picURL;
+
+    public MyData(String name, String count, String time, String picURL) {
         this.name = name;
         this.count = count;
         this.time = time;
+        this.picURL = picURL;
     }
     @Ignore//如果要使用多形的建構子，必須加入@Ignore
-    public MyData(int id,String name, String count, String time) {
+    public MyData(int id,String name, String count, String time, String picURL) {
         this.id = id;
         this.name = name;
         this.count = count;
         this.time = time;
+        this.picURL = picURL;
     }
 
     public int getId() {
@@ -57,5 +61,13 @@ public class MyData {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getPicURL() {
+        return picURL;
+    }
+
+    public void setPicURL(String picURL) {
+        this.picURL = picURL;
     }
 }
