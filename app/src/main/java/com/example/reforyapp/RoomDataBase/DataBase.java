@@ -31,6 +31,7 @@ public abstract class DataBase extends RoomDatabase {
         return Room.databaseBuilder(context,DataBase.class,DB_NAME).build();
     }
 
+    //新增picURL欄位
     public static Migration MAEGIN_1to2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {

@@ -28,11 +28,6 @@ import com.example.reforyapp.RoomDataBase.MyData;
 import java.util.Calendar;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FragmentAdd#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class FragmentAdd extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
@@ -54,14 +49,6 @@ public class FragmentAdd extends Fragment {
     private Button btnTime;
     private TextView tvSelectedDate;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentAdd.
-     */
     // TODO: Rename and change types and number of parameters
     public static FragmentAdd newInstance(String param1, String param2) {
         FragmentAdd fragment = new FragmentAdd();
@@ -105,8 +92,7 @@ public class FragmentAdd extends Fragment {
 
         EditText edPicURL = rootView.findViewById(R.id.editText_PicURL);
 
-        /**=======================================================================================*/
-        /**設置修改資料的事件*/
+        //設置修改資料的事件
         btModify.setOnClickListener((v) -> {
             new Thread(() -> {
                 if(nowSelectedData ==null) return;//如果目前沒前台沒有資料，則以下程序不執行
@@ -128,8 +114,8 @@ public class FragmentAdd extends Fragment {
             }).start();
 
         });
-        /**=======================================================================================*/
-        /**清空資料*/
+
+        //清空資料
         btClear.setOnClickListener((v -> {
             edName.setText("");
             edCount.setText("");
@@ -137,8 +123,8 @@ public class FragmentAdd extends Fragment {
             edPicURL.setText("");
             nowSelectedData = null;
         }));
-        /**=======================================================================================*/
-        /**新增資料*/
+
+        //新增資料
         btCreate.setOnClickListener((v -> {
             new Thread(() -> {
                 String name = edName.getText().toString();
@@ -157,20 +143,19 @@ public class FragmentAdd extends Fragment {
                 });
             }).start();
         }));
-        /**=======================================================================================*/
-        /**初始化RecyclerView*/
+        //初始化RecyclerView
         new Thread(() -> {
             List<MyData> data = DataBase.getInstance(requireContext()).getDataUao().displayAll();
             myAdapter = new MyAdapter(requireActivity(), data);
             requireActivity().runOnUiThread(() -> {
                 recyclerView.setAdapter(myAdapter);
-                /**===============================================================================*/
+
                 myAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {//原本的樣貌
                     @Override
                     public void onItemClick(MyData myData) {}
                 });
-                /**===============================================================================*/
-                /**取得被選中的資料，並顯示於畫面*/
+
+                //取得被選中的資料，並顯示於畫面
                 myAdapter.setOnItemClickListener((myData)-> {//匿名函式(原貌在上方)
                     nowSelectedData = myData;
                     edName.setText(myData.getName());
@@ -178,12 +163,9 @@ public class FragmentAdd extends Fragment {
                     tvSelectedDate.setText(myData.getTime());
                     edPicURL.setText(String.valueOf(myData.getPicURL()));
                 });
-                /**===============================================================================*/
             });
         }).start();
 
-        // Inflate the layout for this fragment
-        //return inflater.inflate(R.layout.fragment_add, container, false);
         return rootView;
     }
 
@@ -197,7 +179,7 @@ public class FragmentAdd extends Fragment {
             this.activity = activity;
             this.myData = myData;
         }
-        /**建立對外接口*/
+        //建立對外接口
         public void setOnItemClickListener(MyAdapter.OnItemClickListener onItemClickListener){
             this.onItemClickListener = onItemClickListener;
         }
@@ -211,7 +193,7 @@ public class FragmentAdd extends Fragment {
                 view = itemView;
             }
         }
-        /**更新資料*/
+        //更新資料
         public void refreshView() {
             new Thread(()->{
                 List<MyData> data = DataBase.getInstance(activity).getDataUao().displayAll();
@@ -221,7 +203,7 @@ public class FragmentAdd extends Fragment {
                 });
             }).start();
         }
-        /**刪除資料*/
+        //刪除資料
         public void deleteData(int position){
             new Thread(()->{
                 DataBase.getInstance(activity).getDataUao().deleteData(myData.get(position).getId());
@@ -252,14 +234,14 @@ public class FragmentAdd extends Fragment {
         public int getItemCount() {
             return myData.size();
         }
-        /**建立對外接口*/
+        //建立對外接口
         public interface OnItemClickListener {
             void onItemClick(MyData myData);
         }
 
     }
 
-    /**設置RecyclerView的左滑刪除行為*/
+    //設置RecyclerView的左滑刪除行為
     private void setRecyclerFunction(RecyclerView recyclerView){
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.Callback() {//設置RecyclerView手勢功能
             @Override
