@@ -287,6 +287,7 @@ public class FragmentAdd extends Fragment {
         helper.attachToRecyclerView(recyclerView);
     }
 
+    //執行DatePickerDialog
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -296,6 +297,7 @@ public class FragmentAdd extends Fragment {
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 requireActivity(),
                 new DatePickerDialog.OnDateSetListener() {
+                    //月從0開始，要加1
                     @Override
                     public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDayOfMonth) {
                         String selectedDate = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDayOfMonth;
