@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Database;
+import androidx.viewpager.widget.ViewPager;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -20,238 +22,296 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.reforyapp.Fragment.FragmentAdd;
+import com.example.reforyapp.Fragment.FragmentHistory;
 import com.example.reforyapp.RoomDataBase.DataBase;
 import com.example.reforyapp.RoomDataBase.MyData;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    MyAdapter myAdapter;
-    MyData nowSelectedData;//取得在畫面上顯示中的資料內容
+    private ViewPager viewPager;
+    private MenuItem menuItem;
+    private BottomNavigationView bottomNavigationView;
 
-    private Button btnTime;
-    private TextView tvSelectedDate;
+    // Step01-製作BottomNavigationView按下個方法:
+    private BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            // Step02-BottomNavigationView按下時判斷Menu的ID，讓ViewPaper跳去相對應的Fragment:
+//            switch (item.getItemId()){
+//                case R.id.nav1_BMI:
+//                    viewPager.setCurrentItem(0);
+//                    break;
+//                case R.id.nav2_order:
+//                    viewPager.setCurrentItem(1);
+//                    break;
+//                case R.id.nav3_setting:
+//                    viewPager.setCurrentItem(2);
+//                    break;
+//            }
+            int id= viewPager.getId();
+            if(id == R.id.navAdd)
+                viewPager.setCurrentItem(0);
+            else if(id == R.id.navHistory)
+                viewPager.setCurrentItem(1);
+            return false;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btCreate = findViewById(R.id.button_Create);
-        Button btModify = findViewById(R.id.button_Modify);
-        Button btClear = findViewById(R.id.button_Clear);
-        EditText edName = findViewById(R.id.editText_Name);
-        EditText edCount = findViewById(R.id.editText_Count);
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));//設置分隔線
-        setRecyclerFunction(recyclerView);//設置RecyclerView左滑刪除
+        // Step03-設定BottomNavigationView的按下事件監聽器:
+        bottomNavigationView = findViewById(R.id.navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 
-        btnTime = findViewById(R.id.button_Time);
-        tvSelectedDate = findViewById(R.id.textView_Time);
+        // Step04-設定ViewPaper的適配器:
+        MainPagerAdapter adapter = new MainPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new FragmentAdd(), "Add");
+        adapter.addFragment(new FragmentHistory(), "History");
+        viewPager = findViewById(R.id.viewPagerMain);
+        viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(2);
 
-        btnTime.setOnClickListener(v -> showDatePickerDialog());
-
-        EditText edPicURL = findViewById(R.id.editText_PicURL);
-
-        /**=======================================================================================*/
-        /**設置修改資料的事件*/
-        btModify.setOnClickListener((v) -> {
-            new Thread(() -> {
-                if(nowSelectedData ==null) return;//如果目前沒前台沒有資料，則以下程序不執行
-                String name = edName.getText().toString();
-                String count = edCount.getText().toString();
-                String time = tvSelectedDate.getText().toString();
-                String picURL = edPicURL.getText().toString();
-                MyData data = new MyData(nowSelectedData.getId(), name, count, time, picURL);
-                DataBase.getInstance(this).getDataUao().updateData(data);
-                runOnUiThread(() -> {
-                    edName.setText("");
-                    edCount.setText("");
-                    tvSelectedDate.setText("");
-                    edPicURL.setText("");
-                    nowSelectedData = null;
-                    myAdapter.refreshView();
-                    Toast.makeText(this, "已更新資訊！", Toast.LENGTH_LONG).show();
-                });
-            }).start();
-
-        });
-        /**=======================================================================================*/
-        /**清空資料*/
-        btClear.setOnClickListener((v -> {
-            edName.setText("");
-            edCount.setText("");
-            tvSelectedDate.setText("");
-            edPicURL.setText("");
-            nowSelectedData = null;
-        }));
-        /**=======================================================================================*/
-        /**新增資料*/
-        btCreate.setOnClickListener((v -> {
-            new Thread(() -> {
-                String name = edName.getText().toString();
-                String count = edCount.getText().toString();
-                String time = tvSelectedDate.getText().toString();
-                String picURL = edPicURL.getText().toString();
-                if (name.length() == 0) return;//如果名字欄沒填入任何東西，則不執行下面的程序
-                MyData data = new MyData(name, count, time, picURL);
-                DataBase.getInstance(this).getDataUao().insertData(data);
-                runOnUiThread(() -> {
-                    myAdapter.refreshView();
-                    edName.setText("");
-                    edCount.setText("");
-                    tvSelectedDate.setText("");
-                    edPicURL.setText("");
-                });
-            }).start();
-        }));
-        /**=======================================================================================*/
-        /**初始化RecyclerView*/
-        new Thread(() -> {
-            List<MyData> data = DataBase.getInstance(this).getDataUao().displayAll();
-            myAdapter = new MyAdapter(this, data);
-            runOnUiThread(() -> {
-                recyclerView.setAdapter(myAdapter);
-                /**===============================================================================*/
-                myAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {//原本的樣貌
-                    @Override
-                    public void onItemClick(MyData myData) {}
-                });
-                /**===============================================================================*/
-                /**取得被選中的資料，並顯示於畫面*/
-                myAdapter.setOnItemClickListener((myData)-> {//匿名函式(原貌在上方)
-                    nowSelectedData = myData;
-                    edName.setText(myData.getName());
-                    edCount.setText(myData.getCount());
-                    tvSelectedDate.setText(myData.getTime());
-                    edPicURL.setText(String.valueOf(myData.getPicURL()));
-                });
-                /**===============================================================================*/
-            });
-        }).start();
-        /**=======================================================================================*/
-
-    }
-
-    private static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-
-        private List<MyData> myData;
-        private Activity activity;
-        private OnItemClickListener onItemClickListener;
-
-        public MyAdapter(Activity activity, List<MyData> myData) {
-            this.activity = activity;
-            this.myData = myData;
-        }
-        /**建立對外接口*/
-        public void setOnItemClickListener(OnItemClickListener onItemClickListener){
-            this.onItemClickListener = onItemClickListener;
-        }
-
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvTitle;
-            View view;
-            public ViewHolder(@NonNull View itemView) {
-                super(itemView);
-                tvTitle = itemView.findViewById(android.R.id.text1);
-                view = itemView;
-            }
-        }
-        /**更新資料*/
-        public void refreshView() {
-            new Thread(()->{
-                List<MyData> data = DataBase.getInstance(activity).getDataUao().displayAll();
-                this.myData = data;
-                activity.runOnUiThread(() -> {
-                    notifyDataSetChanged();
-                });
-            }).start();
-        }
-        /**刪除資料*/
-        public void deleteData(int position){
-            new Thread(()->{
-                DataBase.getInstance(activity).getDataUao().deleteData(myData.get(position).getId());
-                activity.runOnUiThread(()->{
-                    notifyItemRemoved(position);
-                    refreshView();
-                });
-            }).start();
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(android.R.layout.simple_list_item_1, null);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            holder.tvTitle.setText(myData.get(position).getName());
-            holder.view.setOnClickListener((v)->{
-                onItemClickListener.onItemClick(myData.get(position));
-            });
-
-        }
-        @Override
-        public int getItemCount() {
-            return myData.size();
-        }
-        /**建立對外接口*/
-        public interface OnItemClickListener {
-            void onItemClick(MyData myData);
-        }
-
-    }
-
-    /**設置RecyclerView的左滑刪除行為*/
-    private void setRecyclerFunction(RecyclerView recyclerView){
-        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.Callback() {//設置RecyclerView手勢功能
+        // Step05-設定ViewPaper的事件監聽器:
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                return makeMovementFlags(0,ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT);
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+            // ViewPaper選擇到其他頁面時:
+            @Override
+            public void onPageSelected(int position) {
+                // Step06-將相對應的bottomNavigationView選項選取:
+                menuItem = bottomNavigationView.getMenu().getItem(position).setChecked(true);
             }
 
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
+            public void onPageScrollStateChanged(int state) {
 
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
-                switch (direction){
-                    case ItemTouchHelper.LEFT:
-                    case ItemTouchHelper.RIGHT:
-                        myAdapter.deleteData(position);
-                        break;
-
-                }
             }
         });
-        helper.attachToRecyclerView(recyclerView);
+//        Button btCreate = findViewById(R.id.button_Create);
+//        Button btModify = findViewById(R.id.button_Modify);
+//        Button btClear = findViewById(R.id.button_Clear);
+//        EditText edName = findViewById(R.id.editText_Name);
+//        EditText edCount = findViewById(R.id.editText_Count);
+//        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));//設置分隔線
+//        setRecyclerFunction(recyclerView);//設置RecyclerView左滑刪除
+//
+//
+//        btnTime = findViewById(R.id.button_Time);
+//        tvSelectedDate = findViewById(R.id.textView_Time);
+//
+//        btnTime.setOnClickListener(v -> showDatePickerDialog());
+//
+//        EditText edPicURL = findViewById(R.id.editText_PicURL);
+//
+//        /**=======================================================================================*/
+//        /**設置修改資料的事件*/
+//        btModify.setOnClickListener((v) -> {
+//            new Thread(() -> {
+//                if(nowSelectedData ==null) return;//如果目前沒前台沒有資料，則以下程序不執行
+//                String name = edName.getText().toString();
+//                String count = edCount.getText().toString();
+//                String time = tvSelectedDate.getText().toString();
+//                String picURL = edPicURL.getText().toString();
+//                MyData data = new MyData(nowSelectedData.getId(), name, count, time, picURL);
+//                DataBase.getInstance(this).getDataUao().updateData(data);
+//                runOnUiThread(() -> {
+//                    edName.setText("");
+//                    edCount.setText("");
+//                    tvSelectedDate.setText("");
+//                    edPicURL.setText("");
+//                    nowSelectedData = null;
+//                    myAdapter.refreshView();
+//                    Toast.makeText(this, "已更新資訊！", Toast.LENGTH_LONG).show();
+//                });
+//            }).start();
+//
+//        });
+//        /**=======================================================================================*/
+//        /**清空資料*/
+//        btClear.setOnClickListener((v -> {
+//            edName.setText("");
+//            edCount.setText("");
+//            tvSelectedDate.setText("");
+//            edPicURL.setText("");
+//            nowSelectedData = null;
+//        }));
+//        /**=======================================================================================*/
+//        /**新增資料*/
+//        btCreate.setOnClickListener((v -> {
+//            new Thread(() -> {
+//                String name = edName.getText().toString();
+//                String count = edCount.getText().toString();
+//                String time = tvSelectedDate.getText().toString();
+//                String picURL = edPicURL.getText().toString();
+//                if (name.length() == 0) return;//如果名字欄沒填入任何東西，則不執行下面的程序
+//                MyData data = new MyData(name, count, time, picURL);
+//                DataBase.getInstance(this).getDataUao().insertData(data);
+//                runOnUiThread(() -> {
+//                    myAdapter.refreshView();
+//                    edName.setText("");
+//                    edCount.setText("");
+//                    tvSelectedDate.setText("");
+//                    edPicURL.setText("");
+//                });
+//            }).start();
+//        }));
+//        /**=======================================================================================*/
+//        /**初始化RecyclerView*/
+//        new Thread(() -> {
+//            List<MyData> data = DataBase.getInstance(this).getDataUao().displayAll();
+//            myAdapter = new MyAdapter(this, data);
+//            runOnUiThread(() -> {
+//                recyclerView.setAdapter(myAdapter);
+//                /**===============================================================================*/
+//                myAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {//原本的樣貌
+//                    @Override
+//                    public void onItemClick(MyData myData) {}
+//                });
+//                /**===============================================================================*/
+//                /**取得被選中的資料，並顯示於畫面*/
+//                myAdapter.setOnItemClickListener((myData)-> {//匿名函式(原貌在上方)
+//                    nowSelectedData = myData;
+//                    edName.setText(myData.getName());
+//                    edCount.setText(myData.getCount());
+//                    tvSelectedDate.setText(myData.getTime());
+//                    edPicURL.setText(String.valueOf(myData.getPicURL()));
+//                });
+//                /**===============================================================================*/
+//            });
+//        }).start();
+        /**=======================================================================================*/
+
     }
 
-    private void showDatePickerDialog() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                MainActivity.this,
-                new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDayOfMonth) {
-                        String selectedDate = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDayOfMonth;
-                        tvSelectedDate.setText(selectedDate);
-                    }
-                },
-                year, month, day
-        );
-        datePickerDialog.show();
-    }
+//    private static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+//
+//        private List<MyData> myData;
+//        private Activity activity;
+//        private OnItemClickListener onItemClickListener;
+//
+//        public MyAdapter(Activity activity, List<MyData> myData) {
+//            this.activity = activity;
+//            this.myData = myData;
+//        }
+//        /**建立對外接口*/
+//        public void setOnItemClickListener(OnItemClickListener onItemClickListener){
+//            this.onItemClickListener = onItemClickListener;
+//        }
+//
+//        public class ViewHolder extends RecyclerView.ViewHolder {
+//            TextView tvTitle;
+//            View view;
+//            public ViewHolder(@NonNull View itemView) {
+//                super(itemView);
+//                tvTitle = itemView.findViewById(android.R.id.text1);
+//                view = itemView;
+//            }
+//        }
+//        /**更新資料*/
+//        public void refreshView() {
+//            new Thread(()->{
+//                List<MyData> data = DataBase.getInstance(activity).getDataUao().displayAll();
+//                this.myData = data;
+//                activity.runOnUiThread(() -> {
+//                    notifyDataSetChanged();
+//                });
+//            }).start();
+//        }
+//        /**刪除資料*/
+//        public void deleteData(int position){
+//            new Thread(()->{
+//                DataBase.getInstance(activity).getDataUao().deleteData(myData.get(position).getId());
+//                activity.runOnUiThread(()->{
+//                    notifyItemRemoved(position);
+//                    refreshView();
+//                });
+//            }).start();
+//        }
+//
+//        @NonNull
+//        @Override
+//        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+//            View view = LayoutInflater.from(parent.getContext())
+//                    .inflate(android.R.layout.simple_list_item_1, null);
+//            return new ViewHolder(view);
+//        }
+//
+//        @Override
+//        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+//            holder.tvTitle.setText(myData.get(position).getName());
+//            holder.view.setOnClickListener((v)->{
+//                onItemClickListener.onItemClick(myData.get(position));
+//            });
+//
+//        }
+//        @Override
+//        public int getItemCount() {
+//            return myData.size();
+//        }
+//        /**建立對外接口*/
+//        public interface OnItemClickListener {
+//            void onItemClick(MyData myData);
+//        }
+//
+//    }
+//
+//    /**設置RecyclerView的左滑刪除行為*/
+//    private void setRecyclerFunction(RecyclerView recyclerView){
+//        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.Callback() {//設置RecyclerView手勢功能
+//            @Override
+//            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+//                return makeMovementFlags(0,ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT);
+//            }
+//
+//            @Override
+//            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+//                return false;
+//            }
+//
+//            @Override
+//            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+//                int position = viewHolder.getAdapterPosition();
+//                switch (direction){
+//                    case ItemTouchHelper.LEFT:
+//                    case ItemTouchHelper.RIGHT:
+//                        myAdapter.deleteData(position);
+//                        break;
+//
+//                }
+//            }
+//        });
+//        helper.attachToRecyclerView(recyclerView);
+//    }
+//
+//    private void showDatePickerDialog() {
+//        Calendar calendar = Calendar.getInstance();
+//        int year = calendar.get(Calendar.YEAR);
+//        int month = calendar.get(Calendar.MONTH);
+//        int day = calendar.get(Calendar.DAY_OF_MONTH);
+//
+//        DatePickerDialog datePickerDialog = new DatePickerDialog(
+//                MainActivity.this,
+//                new DatePickerDialog.OnDateSetListener() {
+//                    @Override
+//                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDayOfMonth) {
+//                        String selectedDate = selectedYear + "/" + (selectedMonth + 1) + "/" + selectedDayOfMonth;
+//                        tvSelectedDate.setText(selectedDate);
+//                    }
+//                },
+//                year, month, day
+//        );
+//        datePickerDialog.show();
+//    }
 }
