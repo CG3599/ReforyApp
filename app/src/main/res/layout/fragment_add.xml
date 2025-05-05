@@ -10,15 +10,39 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="32dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/recyclerView"-->
+<!--            android:layout_width="402dp"-->
+<!--            android:layout_height="125dp"-->
+<!--            android:layout_marginTop="32dp"-->
+<!--            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintHorizontal_bias="0.444"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/button_Modify"-->
+<!--            app:layout_constraintVertical_bias="0.822" />-->
+
+        <Button
+            android:id="@+id/button_Camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="460dp"
+            android:text="拍攝"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.77"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_Modify" />
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/displayImageView"
+            android:layout_width="119dp"
+            android:layout_height="133dp"
+            android:layout_marginTop="412dp"
+            android:src="@drawable/ic_launcher_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.099"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/button_Create"
@@ -34,10 +58,9 @@
             android:id="@+id/button_Modify"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="44dp"
             android:layout_marginTop="32dp"
-            android:layout_marginEnd="8dp"
             android:text="修改"
-            app:layout_constraintEnd_toStartOf="@+id/button_Clear"
             app:layout_constraintStart_toEndOf="@+id/button_Create"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout5" />
 
@@ -66,9 +89,8 @@
                     android:text="PicURL："
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-                <EditText
-
-                    android:id="@+id/editText_PicURL"
+                <TextView
+                    android:id="@+id/textView_PicURL"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
@@ -157,16 +179,6 @@
                     android:text="選擇日期" />
             </LinearLayout>
         </LinearLayout>
-
-        <Button
-            android:id="@+id/button_Clear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="16dp"
-            android:text="清空顯示"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

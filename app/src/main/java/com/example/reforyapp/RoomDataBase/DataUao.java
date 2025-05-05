@@ -9,12 +9,18 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import androidx.lifecycle.LiveData;
+
 import java.util.List;
 
 @Dao
 public interface DataUao {
 
     String tableName = "MyTable";
+
+    @Query("SELECT * FROM " + tableName + " ORDER BY id DESC")
+    LiveData<List<MyData>> getAllDataLive();
+
     /**=======================================================================================*/
     /**簡易新增所有資料的方法*/
     @Insert(onConflict = OnConflictStrategy.REPLACE)//預設萬一執行出錯怎麼辦，REPLACE為覆蓋
@@ -26,7 +32,7 @@ public interface DataUao {
 
     /**=======================================================================================*/
     /**撈取全部資料*/
-    @Query("SELECT * FROM " + tableName)
+    @Query("SELECT * FROM " + tableName + " ORDER BY id DESC")
     List<MyData> displayAll();
 
     /**撈取某個名字的相關資料*/
