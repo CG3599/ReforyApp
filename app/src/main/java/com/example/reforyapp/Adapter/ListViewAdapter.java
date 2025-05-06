@@ -1,4 +1,4 @@
-package com.example.reforyapp;
+package com.example.reforyapp.Adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,20 +7,19 @@ import android.net.Uri;
 import android.view.*;
 import android.widget.*;
 
+import com.example.reforyapp.R;
 import com.example.reforyapp.RoomDataBase.MyData;
-
-import androidx.room.RoomDatabase;
 
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-public class CheckBoxAdapter extends ArrayAdapter<MyData> {
+public class ListViewAdapter extends ArrayAdapter<MyData> {
     private Context mContext;
     private List<MyData> dataList;
     private Set<Integer> selectedIds = new HashSet<>(); //記錄勾選ID
 
-    public CheckBoxAdapter(Context context, List<MyData> list) {
+    public ListViewAdapter(Context context, List<MyData> list) {
         super(context, 0, list);
         mContext = context;
         dataList = list;

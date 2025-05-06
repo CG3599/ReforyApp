@@ -2,57 +2,30 @@ package com.example.reforyapp.Fragment;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.reforyapp.CheckBoxAdapter;
+import com.example.reforyapp.Adapter.ListViewAdapter;
 import com.example.reforyapp.R;
 import com.example.reforyapp.RoomDataBase.DataBase;
 import com.example.reforyapp.RoomDataBase.MyData;
 import com.example.reforyapp.SharedDataViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import android.Manifest;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.widget.CheckBox;
-
-import android.view.View;
-
-import android.content.ContentResolver;
-
-import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import android.graphics.Bitmap;
@@ -61,11 +34,6 @@ import android.graphics.BitmapFactory;
 import java.io.InputStream;
 import java.util.*;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FragmentHistory#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class FragmentHistory extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
@@ -82,34 +50,15 @@ public class FragmentHistory extends Fragment {
     }
 
     MyData nowSelectedData;
-    String photoURL = "";
 
-    public static final int CAMERA_PERM_CODE = 101;
-    public static final int CAMERA_REQUEST_CODE = 102;
-    //ImageView selectedImage;
-    Button cameraBtn;
-    String currentPhotoPath;
-
-    CheckBoxAdapter checkBoxAdapter;
+    ListViewAdapter ListViewAdapter;
     ListView listView;
     List<MyData> dataList = new ArrayList<>();
-
-    TextView tvUrl, tvSelectedDate;
-    Button btCreate, btModify;
 
     FloatingActionButton btDelete;
 
     SharedDataViewModel sharedDataViewModel;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentHistory.
-     */
-    // TODO: Rename and change types and number of parameters
     public static FragmentHistory newInstance(String param1, String param2) {
         FragmentHistory fragment = new FragmentHistory();
         Bundle args = new Bundle();
@@ -138,13 +87,15 @@ public class FragmentHistory extends Fragment {
         listView = rootView.findViewById(R.id.listView);
         btDelete = rootView.findViewById(R.id.button_Delete);
 
-        checkBoxAdapter = new CheckBoxAdapter(getContext(), dataList);
-        listView.setAdapter(checkBoxAdapter);
+        ListViewAdapter = new ListViewAdapter(getContext(), dataList);
+        listView.setAdapter(ListViewAdapter);
 
         // ListView 點擊顯示資料
         listView.setOnItemClickListener((parent, view, position, id) -> {
             MyData selectedData = dataList.get(position);
             showData(selectedData);
+            AlertDialog.Builder alert1 = createAlertDialog(selectedData);
+            alert1.show();//將設置的內容顯示
         });
 
         sharedDataViewModel = new ViewModelProvider(requireActivity()).get(SharedDataViewModel.class);
@@ -153,12 +104,12 @@ public class FragmentHistory extends Fragment {
         sharedDataViewModel.getAllDataLive().observe(getViewLifecycleOwner(), updatedList -> {
             dataList.clear();
             dataList.addAll(updatedList);
-            checkBoxAdapter.notifyDataSetChanged();
+            ListViewAdapter.notifyDataSetChanged();
         });
 
         // 刪除資料（刪除勾選的項目）
         btDelete.setOnClickListener(v -> {
-            Set<Integer> idsToDelete = checkBoxAdapter.getSelectedIds();
+            Set<Integer> idsToDelete = ListViewAdapter.getSelectedIds();
 
             if (idsToDelete.isEmpty()) {
                 Toast.makeText(getContext(), "請先勾選要刪除的資料", Toast.LENGTH_SHORT).show();
@@ -174,44 +125,57 @@ public class FragmentHistory extends Fragment {
 
                 requireActivity().runOnUiThread(() -> {
                     nowSelectedData = null;
-                    //selectedImage.setImageResource(android.R.drawable.ic_menu_report_image);
 
-                    checkBoxAdapter.clearSelections(); // 刪完後清除勾選
-                    //refreshListView(false);
+                    ListViewAdapter.clearSelections(); // 刪完後清除勾選
                     Toast.makeText(getContext(), "已刪除勾選資料", Toast.LENGTH_SHORT).show();
                 });
             }).start();
         });
 
-        //refreshListView(false);
-
-        // Inflate the layout for this fragment
         return rootView;
     }
 
     private void showData(MyData data) {
         nowSelectedData = data;
-//        tvUrl.setText(data.getPicURL());
-//        tvName.setText(data.getName());
+    }
+
+    //AlertDialog設置
+    private AlertDialog.Builder createAlertDialog(MyData data) {
+        AlertDialog.Builder listViewItemAlert = new AlertDialog.Builder(requireActivity());
+
+        // layout
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.alert_dialog_layout, null);
+        listViewItemAlert.setView(dialogView);
+
+        TextView titleTextView = dialogView.findViewById(R.id.dialog_title);
+        TextView messageTextView = dialogView.findViewById(R.id.dialog_message);
+        ImageView imageView = dialogView.findViewById(R.id.dialog_image);
+
+        titleTextView.setText("名稱: " + data.getName());
+        messageTextView.setText("數量: " + data.getCount() + "\n時間: " + data.getTime());
 
         try {
             Uri uri = Uri.parse(data.getPicURL());
-            InputStream imageStream = requireContext().getContentResolver().openInputStream(uri);
+            InputStream imageStream = requireActivity().getContentResolver().openInputStream(uri);
             Bitmap bitmap = BitmapFactory.decodeStream(imageStream);
-            //selectedImage.setImageBitmap(bitmap);
-        } catch (Exception e) {
-            //selectedImage.setImageResource(android.R.drawable.ic_menu_report_image);
-        }
-    }
 
-//    private void refreshListView(boolean autoShowLast) {
-//        new Thread(() -> {
-//            List<MyData> allData = DataBase.getInstance(getActivity()).getDataUao().displayAll();
-//            requireActivity().runOnUiThread(() -> {
-//                dataList.clear();
-//                dataList.addAll(allData);
-//                checkBoxAdapter.notifyDataSetChanged();
-//            });
-//        }).start();
-//    }
+            // 自動縮小圖片
+            int maxWidth = 800;
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            if (width > maxWidth) {
+                float ratio = (float) maxWidth / width;
+                bitmap = Bitmap.createScaledBitmap(bitmap, maxWidth, (int)(height * ratio), true);
+            }
+
+            imageView.setImageBitmap(bitmap);
+        } catch (Exception e) {
+            imageView.setImageResource(android.R.drawable.ic_menu_report_image);
+        }
+
+        listViewItemAlert.setPositiveButton("關閉", (dialog, which) -> {});
+
+        return listViewItemAlert;
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.reforyapp;
+package com.example.reforyapp.Adapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,7 +29,7 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
         return fragmentList.get(position);
     }
 
-    // 取得要新增的Fragment與你為它取名的title
+    // 取得要新增的Fragment與title
     public void addFragment(Fragment fragment,String title){
         fragmentList.add(fragment);
         fragmentTitle.add(title);

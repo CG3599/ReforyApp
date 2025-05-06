@@ -4,11 +4,11 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "MyTable")//這邊要先取好table的名字，稍後的table設置必須與他相同
+@Entity(tableName = "MyTable")
 public class MyData {
 
 
-    @PrimaryKey(autoGenerate = true)//設置是否使ID自動累加
+    @PrimaryKey(autoGenerate = true)// 設置是否使ID自動累加
     private int id;
     private String name;
     private String count;
@@ -22,7 +22,7 @@ public class MyData {
         this.time = time;
         this.picURL = picURL;
     }
-    @Ignore//如果要使用多形的建構子，必須加入@Ignore
+    @Ignore// 如果要使用多形的建構子，必須加入@Ignore
     public MyData(int id,String name, String count, String time, String picURL) {
         this.id = id;
         this.name = name;

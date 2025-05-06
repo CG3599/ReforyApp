@@ -9,9 +9,9 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {MyData.class},version = 2,exportSchema = true)//資料綁定的Getter-Setter,資料庫版本,是否將資料導出至文件
+@Database(entities = {MyData.class},version = 2,exportSchema = true)// 資料綁定的Getter-Setter,資料庫版本,是否將資料導出至文件
 public abstract class DataBase extends RoomDatabase {
-    public static final String DB_NAME = "RecordData.db";//資料庫名稱
+    public static final String DB_NAME = "MyData.db";// 資料庫名稱
     private static volatile DataBase instance;
 
     public static synchronized DataBase getInstance(Context context){

@@ -15,17 +15,14 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -33,7 +30,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.reforyapp.MainActivity;
 import com.example.reforyapp.R;
 import com.example.reforyapp.RoomDataBase.DataBase;
 import com.example.reforyapp.RoomDataBase.MyData;
@@ -44,44 +40,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-
-import android.Manifest;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-
-import android.widget.CheckBox;
-
-import android.view.View;
-
-import android.widget.Button;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 public class FragmentAdd extends Fragment {
 
@@ -97,8 +55,6 @@ public class FragmentAdd extends Fragment {
     public FragmentAdd() {
         // Required empty public constructor
     }
-
-    //MyAdapter myAdapter;
 
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;
@@ -143,14 +99,8 @@ public class FragmentAdd extends Fragment {
 
         Button btCreate = rootView.findViewById(R.id.button_Create);
         Button btModify = rootView.findViewById(R.id.button_Modify);
-        //Button btClear = rootView.findViewById(R.id.button_Delete);
         EditText edName = rootView.findViewById(R.id.editText_Name);
         EditText edCount = rootView.findViewById(R.id.editText_Count);
-//        RecyclerView recyclerView = rootView.findViewById(R.id.recyclerView);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-//        recyclerView.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));//設置分隔線
-//        setRecyclerFunction(recyclerView);//設置RecyclerView左滑刪除
-
 
         btnTime = rootView.findViewById(R.id.button_Time);
         tvSelectedDate = rootView.findViewById(R.id.textView_Time);
@@ -168,7 +118,7 @@ public class FragmentAdd extends Fragment {
 
         displayImageView = rootView.findViewById(R.id.displayImageView);
 
-        //設置修改資料的事件
+        // 設置修改資料的事件
         btModify.setOnClickListener((v) -> {
             new Thread(() -> {
                 if(nowSelectedData ==null) return;//如果目前沒前台沒有資料，則以下程序不執行
@@ -191,16 +141,7 @@ public class FragmentAdd extends Fragment {
 
         });
 
-        //清空資料
-//        btClear.setOnClickListener((v -> {
-//            edName.setText("");
-//            edCount.setText("");
-//            tvSelectedDate.setText("");
-//            edPicURL.setText("");
-//            nowSelectedData = null;
-//        }));
-
-        //新增資料
+        // 新增資料
         btCreate.setOnClickListener((v -> {
             new Thread(() -> {
                 String name = edName.getText().toString();
@@ -220,133 +161,12 @@ public class FragmentAdd extends Fragment {
             }).start();
         }));
 
-        //初始化RecyclerView
-//        new Thread(() -> {
-//            List<MyData> data = DataBase.getInstance(requireContext()).getDataUao().displayAll();
-//            myAdapter = new MyAdapter(requireActivity(), data);
-//            requireActivity().runOnUiThread(() -> {
-//                recyclerView.setAdapter(myAdapter);
-//
-//                myAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {//原本的樣貌
-//                    @Override
-//                    public void onItemClick(MyData myData) {}
-//                });
-//
-//                //取得被選中的資料，並顯示於畫面
-//                myAdapter.setOnItemClickListener((myData)-> {//匿名函式(原貌在上方)
-//                    nowSelectedData = myData;
-//                    edName.setText(myData.getName());
-//                    edCount.setText(myData.getCount());
-//                    tvSelectedDate.setText(myData.getTime());
-//                    edPicURL.setText(String.valueOf(myData.getPicURL()));
-//                });
-//            });
-//        }).start();
+        hideKeyboardOnOutsideTouch(rootView);
 
         return rootView;
     }
 
-//    private static class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-//
-//        private List<MyData> myData;
-//        private Activity activity;
-//        private MyAdapter.OnItemClickListener onItemClickListener;
-//
-//        public MyAdapter(Activity activity, List<MyData> myData) {
-//            this.activity = activity;
-//            this.myData = myData;
-//        }
-//        //建立對外接口
-//        public void setOnItemClickListener(MyAdapter.OnItemClickListener onItemClickListener){
-//            this.onItemClickListener = onItemClickListener;
-//        }
-//
-//        public class ViewHolder extends RecyclerView.ViewHolder {
-//            TextView tvTitle;
-//            View view;
-//            public ViewHolder(@NonNull View itemView) {
-//                super(itemView);
-//                tvTitle = itemView.findViewById(android.R.id.text1);
-//                view = itemView;
-//            }
-//        }
-//        //更新資料
-//        public void refreshView() {
-//            new Thread(()->{
-//                List<MyData> data = DataBase.getInstance(activity).getDataUao().displayAll();
-//                this.myData = data;
-//                activity.runOnUiThread(() -> {
-//                    notifyDataSetChanged();
-//                });
-//            }).start();
-//        }
-//        //刪除資料
-//        public void deleteData(int position){
-//            new Thread(()->{
-//                DataBase.getInstance(activity).getDataUao().deleteData(myData.get(position).getId());
-//                activity.runOnUiThread(()->{
-//                    notifyItemRemoved(position);
-//                    refreshView();
-//                });
-//            }).start();
-//        }
-//
-//        @NonNull
-//        @Override
-//        public MyAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//            View view = LayoutInflater.from(parent.getContext())
-//                    .inflate(android.R.layout.simple_list_item_1, null);
-//            return new MyAdapter.ViewHolder(view);
-//        }
-//
-//        @Override
-//        public void onBindViewHolder(@NonNull MyAdapter.ViewHolder holder, int position) {
-//            holder.tvTitle.setText(myData.get(position).getName());
-//            holder.view.setOnClickListener((v)->{
-//                onItemClickListener.onItemClick(myData.get(position));
-//            });
-//
-//        }
-//        @Override
-//        public int getItemCount() {
-//            return myData.size();
-//        }
-//        //建立對外接口
-//        public interface OnItemClickListener {
-//            void onItemClick(MyData myData);
-//        }
-//
-//    }
-
-    //設置RecyclerView的左滑刪除行為
-//    private void setRecyclerFunction(RecyclerView recyclerView){
-//        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.Callback() {//設置RecyclerView手勢功能
-//            @Override
-//            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-//                return makeMovementFlags(0,ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT);
-//            }
-//
-//            @Override
-//            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-//                return false;
-//            }
-//
-//            @Override
-//            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-//                int position = viewHolder.getAdapterPosition();
-//                switch (direction){
-//                    case ItemTouchHelper.LEFT:
-//                    case ItemTouchHelper.RIGHT:
-//                        myAdapter.deleteData(position);
-//                        break;
-//
-//                }
-//            }
-//        });
-//        helper.attachToRecyclerView(recyclerView);
-//    }
-
-    //執行DatePickerDialog
+    // 執行DatePickerDialog
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -436,6 +256,34 @@ public class FragmentAdd extends Fragment {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
             }
+        }
+    }
+
+    // 點擊空白處隱藏鍵盤
+    private void hideKeyboardOnOutsideTouch(View view) {
+        // 如果不是EditText，則加入touch listener
+        if (!(view instanceof EditText)) {
+            view.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    hideKeyboard();
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    v.performClick();  // 通知系統這是一次點擊
+                }
+                return false;  // 不消耗事件，繼續傳遞給其他View
+            });
+        }
+    }
+
+    // 隱藏鍵盤
+    private void hideKeyboard() {
+        View view = requireActivity().getCurrentFocus();
+        if (view == null) return;
+
+        InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 }
