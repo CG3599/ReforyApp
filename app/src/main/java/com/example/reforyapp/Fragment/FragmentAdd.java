@@ -26,6 +26,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,19 +44,6 @@ import java.util.Date;
 
 public class FragmentAdd extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public FragmentAdd() {
-        // Required empty public constructor
-    }
-
     public static final int CAMERA_PERM_CODE = 101;
     public static final int CAMERA_REQUEST_CODE = 102;
 
@@ -63,33 +51,15 @@ public class FragmentAdd extends Fragment {
 
     ImageView displayImageView;
 
-    MyData nowSelectedData;//取得在畫面上顯示中的資料內容
+    private Button btnTime;
 
-    private Button btnTime, btnCamera;
-    private TextView tvSelectedDate, tvPicUrl;
+    private ImageButton btnCamera;
+
+    private TextView tvSelectedDate;
 
     String photoURL = "";
 
     SharedDataViewModel sharedDataViewModel;
-
-    // TODO: Rename and change types and number of parameters
-    public static FragmentAdd newInstance(String param1, String param2) {
-        FragmentAdd fragment = new FragmentAdd();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,8 +67,7 @@ public class FragmentAdd extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_add, container, false);
 
-        Button btCreate = rootView.findViewById(R.id.button_Create);
-        Button btModify = rootView.findViewById(R.id.button_Modify);
+        Button btCreate = rootView.findViewById(R.id.button_Add);
         EditText edName = rootView.findViewById(R.id.editText_Name);
         EditText edCount = rootView.findViewById(R.id.editText_Count);
 
@@ -107,7 +76,6 @@ public class FragmentAdd extends Fragment {
 
         btnTime.setOnClickListener(v -> showDatePickerDialog());
 
-        tvPicUrl = rootView.findViewById(R.id.textView_PicURL);
 
         sharedDataViewModel = new ViewModelProvider(requireActivity()).get(SharedDataViewModel.class);
 
@@ -118,45 +86,28 @@ public class FragmentAdd extends Fragment {
 
         displayImageView = rootView.findViewById(R.id.displayImageView);
 
-        // 設置修改資料的事件
-        btModify.setOnClickListener((v) -> {
-            new Thread(() -> {
-                if(nowSelectedData ==null) return;//如果目前沒前台沒有資料，則以下程序不執行
-                String name = edName.getText().toString();
-                String count = edCount.getText().toString();
-                String time = tvSelectedDate.getText().toString();
-                String picURL = tvPicUrl.getText().toString();
-                MyData data = new MyData(nowSelectedData.getId(), name, count, time, picURL);
-                DataBase.getInstance(requireActivity()).getDataUao().updateData(data);
-                requireActivity().runOnUiThread(() -> {
-                    edName.setText("");
-                    edCount.setText("");
-                    tvSelectedDate.setText("");
-                    tvPicUrl.setText("");
-                    nowSelectedData = null;
-                    //myAdapter.refreshView();
-                    Toast.makeText(requireContext(), "已更新資訊！", Toast.LENGTH_LONG).show();
-                });
-            }).start();
-
-        });
-
         // 新增資料
         btCreate.setOnClickListener((v -> {
             new Thread(() -> {
                 String name = edName.getText().toString();
                 String count = edCount.getText().toString();
                 String time = tvSelectedDate.getText().toString();
-                String picURL = tvPicUrl.getText().toString();
-                if (name.length() == 0) return;//如果名字欄沒填入任何東西，則不執行下面的程序
-                MyData data = new MyData(name, count, time, picURL);
+
+                // 如果名稱、日期欄都沒填入任何東西，則不繼續
+                if (name.isEmpty() || time.isEmpty()) {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "請填入名稱及日期", Toast.LENGTH_SHORT).show();
+                    });
+                    return;
+                }
+                MyData data = new MyData(name, count, time, photoURL);
                 DataBase.getInstance(requireActivity()).getDataUao().insertData(data);
                 requireActivity().runOnUiThread(() -> {
-                    //myAdapter.refreshView();
                     edName.setText("");
                     edCount.setText("");
                     tvSelectedDate.setText("");
-                    tvPicUrl.setText("");
+                    photoURL="";
+                    displayImageView.setImageResource(R.drawable.no_image_avaliable);
                 });
             }).start();
         }));
@@ -168,6 +119,7 @@ public class FragmentAdd extends Fragment {
 
     // 執行DatePickerDialog
     private void showDatePickerDialog() {
+        hideKeyboard();
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
@@ -188,7 +140,7 @@ public class FragmentAdd extends Fragment {
         datePickerDialog.show();
     }
 
-    // 拍照權限
+    // ---拍照權限---
     private void verifyPermissions() {
         String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -214,7 +166,9 @@ public class FragmentAdd extends Fragment {
             }
         }
     }
+    // ------
 
+    // 開相機，拍照並指定儲存位置
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -228,10 +182,10 @@ public class FragmentAdd extends Fragment {
             requireActivity().sendBroadcast(mediaScanIntent);
 
             photoURL = contentUri.toString();
-            tvPicUrl.setText(photoURL);
         }
     }
 
+    // 建立照片檔案
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
@@ -241,6 +195,7 @@ public class FragmentAdd extends Fragment {
         return image;
     }
 
+    // 拍完照後顯示照片，通知相簿並存URI
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {

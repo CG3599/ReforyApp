@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="新增"
-        android:id="@+id/navAdd">
-        <!--        android:icon="@drawable/calculator">-->
+    <item
+        android:title=""
+        android:id="@+id/navAdd"
+        android:icon="@drawable/selector_icon_add">
 
     </item>
 
-    <item android:title="歷史紀錄"
-        android:id="@+id/navHistory">
-    <!--        android:icon="@drawable/orderfood">-->
+    <item
+        android:title=""
+        android:id="@+id/navHistory"
+        android:icon="@drawable/selector_icon_history" >
     </item>
 </menu>

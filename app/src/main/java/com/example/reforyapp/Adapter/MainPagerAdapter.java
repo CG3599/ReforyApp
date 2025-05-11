@@ -17,7 +17,7 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
         super(fm);
     }
 
-    //計算要做出幾個分頁
+    // 計算要做出幾個分頁
     @Override
     public int getCount() {
         return fragmentList.size();

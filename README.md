@@ -16,8 +16,8 @@ Refory 是一款使用 Android 開發的 App，使用 Room 作為資料庫，可
 - Java
 - Android
 - Room Database
-- ListView
+- RecyclerView
 - Fragment
 - LiveData
 - AlertDialog
-- Notification
+- Notification(開發中)

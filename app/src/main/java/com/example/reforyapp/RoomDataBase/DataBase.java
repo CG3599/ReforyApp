@@ -16,7 +16,7 @@ public abstract class DataBase extends RoomDatabase {
 
     public static synchronized DataBase getInstance(Context context){
 //        if(instance == null){
-//            instance = create(context);//創立新的資料庫
+//            instance = create(context);// 創立新的資料庫
 //        }
 //        return instance;
         if(instance == null) {
@@ -31,7 +31,7 @@ public abstract class DataBase extends RoomDatabase {
         return Room.databaseBuilder(context,DataBase.class,DB_NAME).build();
     }
 
-    //新增picURL欄位
+    // 新增picURL欄位
     public static Migration MAEGIN_1to2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {

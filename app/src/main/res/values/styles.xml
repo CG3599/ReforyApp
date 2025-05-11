@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--圖片圓角Style-->
+    <style name="RoundedImageViewStyle">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!--圖片圓角Style-->
+    <style name="BottomNav_NoIndicator">
+        <item name="android:color">@android:color/transparent</item> <!--確保indicator透明-->
+        <item name="android:radius">0dp</item> <!--不要圓角-->
+    </style>
+</resources>
